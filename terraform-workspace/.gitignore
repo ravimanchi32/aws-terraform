@@ -1,0 +1,31 @@
+# Local .terraform directory
+.terraform/
+
+# Terraform state files
+terraform.tfstate
+terraform.tfstate.backup
+*.tfstate
+*.tfstate.*
+
+# State files for workspaces (stored in terraform.tfstate.d/)
+terraform.tfstate.d/
+
+# Lock file (can be ignored in teams with consistent dependency setup)
+.terraform.lock.hcl
+
+# Variable files with sensitive data (optional)
+# *.tfvars
+*.tfvars.json
+
+# Crash logs (if any)
+crash.log
+
+# Ignore plan output (optional)
+*.plan
+
+# Ignore YAML if not part of source (optional if generated)
+*.yaml
+
+# OS-specific files (safe defaults)
+.DS_Store
+Thumbs.db

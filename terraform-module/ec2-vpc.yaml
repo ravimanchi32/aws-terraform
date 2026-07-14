@@ -1,0 +1,94 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  Key:
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
+    Type: AWS::EC2::KeyPair::KeyName
+    ConstraintDescription: must be the name of an existing EC2 KeyPair.
+  
+  Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      InstanceTenancy: default
+      Tags:
+        - Key: Name
+          Value: linux Target VPC
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+  VPCGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
+  SubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: us-east-1a
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.0.0/24
+      MapPublicIpOnLaunch: true
+  RouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+  InternetRoute:
+    Type: AWS::EC2::Route
+    DependsOn: InternetGateway
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+      RouteTableId: !Ref RouteTable
+  SubnetARouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref RouteTable
+      SubnetId: !Ref SubnetA
+  WebServerSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Enable HTTP from 0.0.0.0/0
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '22'
+          ToPort: '22'
+          CidrIp: 0.0.0.0/0
+        - 
+          IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+      VpcId: !Ref VPC
+        
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-0022f774911c1d690
+      InstanceType: t2.micro
+      SubnetId: !Ref SubnetA
+      SecurityGroupIds: 
+        - !Ref WebServerSecurityGroup
+      KeyName: !Ref Key
+      Tags:
+      - Key: Name
+        Value: dev Project EC2
+      UserData:
+        Fn::Base64: !Sub |
+            #!/bin/bash
+            sudo apt update -y &&
+            sudo apt install -y nginx
+          
+
+      Tags:
+      - Key: Name
+        Value: linux
+      - Key: Environment
+        Value: dev
+        
+Outputs:
+  PublicIp:
+    Value:
+      Fn::GetAtt:
+        - EC2Instance
+        - PublicIp
+    Description: Server's PublicIp Address

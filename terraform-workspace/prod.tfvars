@@ -1,0 +1,8 @@
+env_prefix = "prod"
+ami = "ami-053b0d53c279acc90"
+instance_type = "t2.micro"
+key_name = "gitlab"
+vpc_cidr_block = "10.0.0.0/16"
+availbility_zone = "us-east-1"
+public_subnet = "10.0.1.0/24"
+private_subnet = "10.0.2.0/24"
